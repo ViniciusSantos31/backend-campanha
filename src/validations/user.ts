@@ -14,7 +14,7 @@ const createUserSchema = z.object({
 });
 
 const paramsUserSchema = z.object({
-  uuid: z.string().uuid(),
+  id: z.string().uuid(),
 });
 
 const editUserSchema = createUserSchema.partial();

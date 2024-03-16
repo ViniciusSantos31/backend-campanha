@@ -6,8 +6,6 @@ import { createUserSchema, paramsUserSchema } from "../validations/user";
 
 const prisma = new PrismaClient();
 
-
-
 async function createUser(request: FastifyRequest, reply: FastifyReply) {
 
   try {
@@ -28,7 +26,7 @@ async function createUser(request: FastifyRequest, reply: FastifyReply) {
 
     const company = await prisma.company.findFirst({
       where: {
-        uuid: user.companyId,
+        id: user.companyId,
       }
     })
 
@@ -77,10 +75,10 @@ async function getUsers(request: FastifyRequest, reply: FastifyReply) {
 async function getUser(request: FastifyRequest, reply: FastifyReply) {
   try {
 
-    const { uuid } = paramsUserSchema.parse(request.params);
+    const { id } = paramsUserSchema.parse(request.params);
     const user = await prisma.user.findFirst({
       where: {
-        uuid,
+        id,
       },
     });
   
