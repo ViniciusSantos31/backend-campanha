@@ -7,15 +7,15 @@ async function routes(fastify: FastifyInstance, options: RouteOptions) {
 
   fastify.get('/users/me', async (request, reply) => {  });
 
-  fastify.get('/users/:uuid', getUser);
+  fastify.get('/users/:id', getUser);
 
   fastify.get('/users', getUsers);
 
   fastify.get('/users/providers', getProviders);
 
-  fastify.put('/users/:uuid', async (request, reply) => { });
+  fastify.put('/users/:id', async (request, reply) => { });
 
-  fastify.delete('/users/:uuid', async (request, reply) => { });
+  fastify.delete('/users/:id', async (request, reply) => { });
 }
 
 export default routes;

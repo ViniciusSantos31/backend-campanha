@@ -26,7 +26,7 @@ async function createCompany(request: FastifyRequest, reply: FastifyReply) {
       data: company,
     });
   
-    reply.status(201).send({ uuid: companyCreated.uuid});
+    reply.status(201).send({ id: companyCreated.id});
   } catch (error) {
     if (error instanceof ZodError) {
       const validation_errors = error.errors.map((error) => {
