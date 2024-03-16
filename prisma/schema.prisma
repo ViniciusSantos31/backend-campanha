@@ -13,9 +13,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserType {
+  PROVIDER
+  REQUESTER
+}
+
+enum Status {
+  AVAILABLE
+  OFFLINE
+  BUSY
+  PAUSED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
+  uuid      String   @id @default(uuid())
+  firstName String
+  lastName  String
+  phone     String
+  cpf       String
+  doc       String
   email     String   @unique
+  userType  UserType @default(REQUESTER)
+  status    Status   @default(OFFLINE)
+  company   Company  @relation(fields: [companyId], references: [uuid])
+  companyId String
+  avatarUrl String?
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Company {
+  uuid      String   @id @default(uuid())
+  name      String
+  cnpj      String   @unique
+  users     User[]
   createdAt DateTime @default(now())
 }
