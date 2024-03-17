@@ -1,21 +1,37 @@
 
 import { FastifyInstance, RouteOptions } from 'fastify';
-import { createUser, getProviders, getUser, getUsers } from '../services/users';
+import { authMiddleware } from '../middlewares/auth';
+import {
+  createUser,
+  getProviders, getUser, getUsers, me, toggleStatus, updateUser
+} from '../services/users';
 
 async function routes(fastify: FastifyInstance, options: RouteOptions) {
-  fastify.post('/users', createUser);
 
-  fastify.get('/users/me', async (request, reply) => {  });
+  fastify.post('/users', options, createUser);
 
-  fastify.get('/users/:id', getUser);
+  fastify.get('/users/me', 
+    { ...options, preHandler: authMiddleware }, me);
 
-  fastify.get('/users', getUsers);
+  fastify.get('/users/:id', 
+    { ...options, preHandler: authMiddleware }, getUser);
 
-  fastify.get('/users/providers', getProviders);
+  fastify.get('/users', 
+    { ...options, preHandler: authMiddleware }, getUsers);
 
-  fastify.put('/users/:id', async (request, reply) => { });
+  fastify.get('/users/providers', 
+    { ...options, preHandler: authMiddleware }, getProviders);
 
-  fastify.delete('/users/:id', async (request, reply) => { });
+  fastify.put('/users/:id', 
+    { ...options, preHandler: authMiddleware }, updateUser);
+  
+  fastify.patch('/users/provider/status', {
+    ...options,
+    preHandler: authMiddleware,
+  }, toggleStatus),
+
+  fastify.delete('/users/:id', 
+    { ...options, preHandler: authMiddleware }, async (request, reply) => { });
 }
 
 export default routes;
