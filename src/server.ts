@@ -10,7 +10,6 @@ app.register(cors, {
   origin: '*'
 });
 
-
 app.register(authRoutes);
 app.register(companyRoutes);
 app.register(usersRoutes);
