@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Server } from 'socket.io';
 
 const socket = new Server({
@@ -15,7 +16,7 @@ socket.on('connection', (socket) => {
   socket.broadcast.emit('new_connection', socket.id);
 });
 
-socket.listen(3000, {
+socket.listen(process.env.PORT ? Number(process.env.PORT) : 3000, {
   transports: ['websocket'],
 });
 
