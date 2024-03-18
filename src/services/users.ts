@@ -114,7 +114,12 @@ async function getProviders(request: FastifyRequest, reply: FastifyReply) {
         status: 'asc'
       }
     });
-    reply.send({ users });
+
+    const usersWithoutPassword = users.map((user) => {
+      return exclude(user, ['password']);
+    });
+
+    reply.send({ users: usersWithoutPassword });
   } catch (error) {
     if (error instanceof Error)
       reply.status(500).send({ message: error.message });
