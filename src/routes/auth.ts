@@ -6,7 +6,7 @@ import {
 } from '../services/auth';
 
 async function routes(fastify: FastifyInstance, options: RouteOptions) {
-  fastify.post('/login', options, login);
+  fastify.post('/login', { ...options }, login);
 
   fastify.head('/logout', { ...options, preHandler: authMiddleware }, logout);
   

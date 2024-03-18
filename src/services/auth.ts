@@ -41,7 +41,7 @@ async function login(request: FastifyRequest, reply: FastifyReply) {
     });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || '', {
-      expiresIn: '1d'
+      expiresIn: '1m'
     });
 
     socket.emit("user_login");

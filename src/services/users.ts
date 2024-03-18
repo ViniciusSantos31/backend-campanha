@@ -163,6 +163,8 @@ async function updateUser(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
+async function uploadImage(request: FastifyRequest, reply: FastifyReply) { }
+
 async function toggleStatus(request: FastifyRequest, reply: FastifyReply) { 
   try {
     const token = request.headers.authorization?.split(' ')[1];
