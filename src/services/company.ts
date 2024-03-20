@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 import { createCompanySchema } from "../validations/company";
+import { prisma } from "./prisma";
 
-const prisma = new PrismaClient();
 
 async function createCompany(request: FastifyRequest, reply: FastifyReply) {
 

@@ -25,21 +25,28 @@ enum Status {
   PAUSED
 }
 
+enum ConferenceStatus {
+  OPEN
+  FINISHED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  phone     String
-  cpf       String
-  doc       String
-  email     String   @unique
-  userType  UserType @default(REQUESTER)
-  status    Status   @default(OFFLINE)
-  company   Company  @relation(fields: [companyId], references: [id])
-  companyId String
-  avatarUrl String?
-  password  String
-  createdAt DateTime @default(now())
+  id           String       @id @default(uuid())
+  firstName    String
+  lastName     String
+  phone        String
+  cpf          String
+  doc          String
+  email        String       @unique
+  userType     UserType     @default(REQUESTER)
+  status       Status       @default(OFFLINE)
+  company      Company      @relation(fields: [companyId], references: [id])
+  companyId    String
+  avatarUrl    String?
+  password     String
+  createdAt    DateTime     @default(now())
+  inQueueSince DateTime?
+  conferences  Conference[]
 }
 
 model Company {
@@ -48,4 +55,12 @@ model Company {
   cnpj      String   @unique
   users     User[]
   createdAt DateTime @default(now())
+}
+
+model Conference {
+  id         String           @id @default(uuid())
+  short      String           @unique
+  provider   User             @relation(fields: [providerId], references: [id])
+  providerId String
+  status     ConferenceStatus @default(OPEN)
 }

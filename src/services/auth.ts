@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 
@@ -8,8 +7,8 @@ import bycript from 'bcrypt';
 import { socket } from "../socket/server";
 import { exclude } from "../utils/excludeField";
 import { loginSchema } from "../validations/auth";
+import { prisma } from "./prisma";
 
-const prisma = new PrismaClient();
 
 async function login(request: FastifyRequest, reply: FastifyReply) {
 
@@ -41,7 +40,7 @@ async function login(request: FastifyRequest, reply: FastifyReply) {
     });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || '', {
-      expiresIn: '1m'
+      expiresIn: '2d'
     });
 
     socket.emit("user_login");

@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 import { exclude } from "../utils/excludeField";
@@ -9,8 +8,8 @@ import jwt from 'jsonwebtoken';
 
 import { socket } from "../socket/server";
 import { createUserSchema, editUserSchema, paramsUserSchema } from "../validations/user";
+import { prisma } from "./prisma";
 
-const prisma = new PrismaClient();
 
 async function createUser(request: FastifyRequest, reply: FastifyReply) {
 
@@ -147,6 +146,8 @@ async function updateUser(request: FastifyRequest, reply: FastifyReply) {
       },
       data: user,
     });
+    if (user.userType === 'PROVIDER')
+      socket.emit('user_status_changed');
 
     reply.send();
   } catch (error) {
@@ -172,7 +173,8 @@ async function toggleStatus(request: FastifyRequest, reply: FastifyReply) {
     if (!token)
       return reply.status(401).send({ message: "Token não informado" });
 
-    const { id } = jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
+    const { id } =
+      jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
 
     const user = await prisma.user.findFirst({
       where: {
@@ -189,7 +191,7 @@ async function toggleStatus(request: FastifyRequest, reply: FastifyReply) {
       })
     
       
-    await prisma.user.update({
+    const userUpdated = await prisma.user.update({
       where: {
         id,
       },
@@ -200,6 +202,20 @@ async function toggleStatus(request: FastifyRequest, reply: FastifyReply) {
     })
       
     socket.emit("user_status_changed", user.id);
+    
+    const usersInQueue = await prisma.user.findMany({
+      where: {
+        status: 'AVAILABLE',
+        userType: 'REQUESTER',
+      },
+      orderBy: {
+        inQueueSince: 'asc',
+      }
+    });
+
+    if (usersInQueue.length > 0 && userUpdated.status === 'AVAILABLE') {
+      socket.emit("new_user_in_queue", usersInQueue[0]);
+    }
 
     reply.status(200).send();
   } catch (error) {
@@ -232,7 +248,100 @@ async function me(request: FastifyRequest, reply: FastifyReply) {
   reply.send(meWithoutPassword);
 }
 
+async function joinQueue(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const token = request.headers.authorization?.split(' ')[1];
+
+    if (!token) return reply.status(401).send({ message: "Token não informado" });
+
+    const { id } =
+      jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) return reply.status(404).send(
+      { message: "Usuário não encontrado" }
+    );
+
+    if (user.inQueueSince !== null)
+      return reply.status(400).send(
+        { message: "Você já está na fila de espera" }
+      );
+
+    await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...user,
+        status: 'AVAILABLE',
+        inQueueSince: new Date(),
+      }
+    });
+
+    socket.to('plantao').emit('new_user_in_queue', user);
+
+    reply.status(200).send();
+  } catch (error) {
+    if (error instanceof Error) {
+      reply.status(500).send({ message: error.message });
+    }
+  }
+}
+
+async function leaveQueue(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const token = request.headers.authorization?.split(' ')[1];
+
+    if (!token) return reply.status(401).send(
+      { message: "Token não informado" }
+    );
+
+    const { id } =
+      jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) return reply.status(404).send(
+      { message: "Usuário não encontrado" }
+    );
+
+    await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...user,
+        status: 'OFFLINE',
+        inQueueSince: null,
+      }
+    });
+
+    reply.status(200).send();
+  } catch (error) {
+    if (error instanceof Error) {
+      reply.status(500).send({ message: error.message });
+    }
+  }
+}
+
 export {
-  createUser, getProviders, getUser, getUsers, me, toggleStatus, updateUser
+  createUser,
+  getProviders,
+  getUser,
+  getUsers,
+  joinQueue,
+  leaveQueue,
+  me,
+  toggleStatus,
+  updateUser
 };
 

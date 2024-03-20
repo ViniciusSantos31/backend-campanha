@@ -41,6 +41,7 @@
     "firebase-admin": "^12.0.0",
     "jsonwebtoken": "^9.0.2",
     "socket.io": "^4.7.5",
+    "wise-api": "^1.1.11",
     "zod": "^3.22.4"
   }
 }

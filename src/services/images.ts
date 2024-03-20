@@ -1,12 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { PrismaClient } from '@prisma/client';
 import { createWriteStream } from 'fs';
 import { bucket } from '../firebase';
 import { paramsUserSchema } from '../validations/user';
+import { prisma } from './prisma';
 
 
-const prisma = new PrismaClient();
 
 async function uploadImage(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -31,8 +30,6 @@ async function uploadImage(request: FastifyRequest, reply: FastifyReply) {
       reply.status(400).send({ message: 'No file uploaded' });
       return;
     }
-
-    const typeImage = file.mimetype.split('/')[1];
 
     const writeFile = await file.toBuffer();
     createWriteStream(`./images/${file.filename}`).write(writeFile);
