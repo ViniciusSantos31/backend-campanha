@@ -3,9 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { transporter } from "../lib/nodemailer";
 import { prisma } from "./prisma";
 
-import Handlebars from 'handlebars';
-
-import fs from 'fs';
+import { template } from '../template/email';
 
 async function sendEmail(request: FastifyRequest, reply: FastifyReply) {
 
@@ -13,8 +11,11 @@ async function sendEmail(request: FastifyRequest, reply: FastifyReply) {
 
     const { email } = request.body as { email: string };
 
-    const template = fs.readFileSync('./src/email/template.html', 'utf8');
-    const parseTemplate = Handlebars.compile(template);
+    
+    // const template = fs.readFileSync('./src/template/email.html', 'utf8');
+    // const parseTemplate = Handlebars.compile(template);
+
+    // console.log(parseTemplate({ code: 1234 }))
 
     const userExists = await prisma.user.findFirst({
       where: {
@@ -61,7 +62,7 @@ async function sendEmail(request: FastifyRequest, reply: FastifyReply) {
       from: process.env.EMAIL_FROM,
       to: 'vncssnts31@gmail.com',
       subject: `[Plantão] Seu código de verificação - ${code.code}`,
-      html: parseTemplate({ code: code.code }),
+      html: template.replace('{{code}}', code.code.toString())
     }).then(() => {
       console.log('E-mail enviado com sucesso');
     }).catch((error) => { 

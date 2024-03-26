@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+export const template: string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -36,7 +36,7 @@
         width: 100%;
         max-width: 700px;
         border-spacing: 0;
-      	border-radius: 8px;
+        border-radius: 8px;
         color: #171a1b;
       }
 
@@ -46,7 +46,7 @@
         border: 2px solid;
         padding: 16px;
         border-radius: 8px;
-      	padding: 50px;
+        padding: 50px;
       }
 
       .logo {
@@ -65,23 +65,23 @@
         text-align: center;
         font-weight: bold;
         font-size: 96px;
-      	margin-bottom: 40px;
-      	margin-top: 40px;
-      	letter-spacing: 2rem;
-      	margin-left: 2rem;
+        margin-bottom: 40px;
+        margin-top: 40px;
+        letter-spacing: 2rem;
+        margin-left: 2rem;
       }
       
       .logo p {
-      	font-weight: 500;
-      	margin: 0;
+        font-weight: 500;
+        margin: 0;
       }
       
       .logo {
-      	margin: 50px 0;
+        margin: 50px 0;
       }
       
       span.message {
-      	font-size: 24px;
+        font-size: 24px;
       }
 
       small {
@@ -93,14 +93,14 @@
   <body>
     <center class="wrapper">
       <table class="main" width="100%"">
-    	<tr>
+        <tr>
           <td class="wrapper-inner" align="center">
             <table class="content" width="100%">
               <tr>
                 <td class="content-inner" align="center" width="100%">
                   <aside class="logo" style="width: 100%; display: flex;">
                     <p>Plantão</p>
-                   	<img src="src/assets/logo_procon.png" />
+                        <img src="src/assets/logo_procon.png" />
                   </aside>
                   <span class="message">Aqui está o código de verificação para redefinição de senha.</span>
                   <p class="code">{{code}}</p>
@@ -115,4 +115,4 @@
       </table>
     </center>
   </body>
-</html>
+</html>`
