@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import conference from '../routes/conference';
 import { socket } from '../socket/server';
 import { createConferenceSchema } from '../validations/conference';
 import { prisma } from './prisma';
@@ -21,6 +20,23 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
     if (!provider || provider.status !== 'AVAILABLE')
       return reply.status(404).send(
         { message: 'Consultor não encontrado ou não disponível.' });
+    
+    const providersInQueue = await prisma.user.findFirst({
+      where: {
+        status: 'AVAILABLE',
+        AND: {
+          userType: 'PROVIDER',
+        }
+      },
+      orderBy: {
+        inQueueSince: 'asc',
+      }
+    });
+
+    if (providersInQueue && providersInQueue.id !== provider.id) {
+      return reply.status(400).send(
+        { message: 'Existem consultores na fila antes de você.' });
+    }
 
     let conferenceOpen = await prisma.conference.findFirst({
       where: {
@@ -31,8 +47,20 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
       },
     });
 
-    if (!conferenceOpen) {
+    if (conferenceOpen) {
+      const statusConference = (await (await wiseAPI).session.get(conferenceOpen.short)).status;
 
+      if (statusConference === 'CLOSED') {
+        conferenceOpen = await prisma.conference.update({
+          where: {
+            id: conferenceOpen.id,
+          },
+          data: {
+            status: 'FINISHED',
+          },
+        });
+      }
+    } else {
       const session = await (await wiseAPI).session.create({
         org: process.env.WISE_ORG as string,
         orgUnit: process.env.WISE_ORG_UNIT as string,
@@ -51,7 +79,6 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
         },
       });
     }
-    
 
     await prisma.user.update({
       where: {
@@ -77,14 +104,14 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
     });
 
     const olderUser = usersInQueue[0];
-    
+
     socket.emit('conference_created', {
       short: conferenceOpen.short,
       userToCall: olderUser,
       providerToCall: provider,
     });
 
-    reply.send({ conference });
+    reply.send({ conferenceOpen });
   } catch (error) {
     if (error instanceof Error)
       reply.status(500).send({ message: error.message });
@@ -95,7 +122,7 @@ async function closeConference(request: FastifyRequest, reply: FastifyReply) {
   try {
     const { short } =
       request.params as { short: string };
-    
+
     const { providerId } = request.body as { providerId: string };
 
     const conference = await prisma.conference.findFirst({

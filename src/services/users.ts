@@ -2,14 +2,18 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 import { exclude } from "../utils/excludeField";
 
+import util from 'util';
+
 import bycript from 'bcrypt';
 
 import jwt from 'jsonwebtoken';
 
+import { pipeline } from "stream";
 import { socket } from "../socket/server";
 import { createUserSchema, editUserSchema, paramsUserSchema } from "../validations/user";
 import { prisma } from "./prisma";
 
+const pump = util.promisify(pipeline);
 
 async function createUser(request: FastifyRequest, reply: FastifyReply) {
 
@@ -18,7 +22,7 @@ async function createUser(request: FastifyRequest, reply: FastifyReply) {
     
     const isRegistered = await prisma.user.findFirst({
       where: {
-        email: user.email,
+        email: user.email,  
         companyId: user.companyId
       },
     });
@@ -128,7 +132,7 @@ async function getProviders(request: FastifyRequest, reply: FastifyReply) {
 async function updateUser(request: FastifyRequest, reply: FastifyReply) {
   try {
     const { id } = paramsUserSchema.parse(request.params);
-    const user = editUserSchema.parse(request.body);
+    const newUserData = editUserSchema.parse(request.body);
 
     const userExists = await prisma.user.findFirst({
       where: {
@@ -144,10 +148,8 @@ async function updateUser(request: FastifyRequest, reply: FastifyReply) {
       where: {
         id,
       },
-      data: user,
+      data: newUserData,
     });
-    if (user.userType === 'PROVIDER')
-      socket.emit('user_status_changed');
 
     reply.send();
   } catch (error) {
@@ -190,6 +192,13 @@ async function toggleStatus(request: FastifyRequest, reply: FastifyReply) {
         message: "Você não tem permissão para realizar esta ação."
       })
     
+    const getNewStatus = () => {
+      if (user.status === 'PAUSED' || user.status === 'BUSY') {
+        return 'AVAILABLE';
+      } else if (user.status === 'AVAILABLE') {
+        return 'PAUSED';
+      }
+    }
       
     const userUpdated = await prisma.user.update({
       where: {
@@ -197,10 +206,12 @@ async function toggleStatus(request: FastifyRequest, reply: FastifyReply) {
       },
       data: {
         ...user,
-        status: user.status === 'PAUSED' ? 'AVAILABLE' : 'PAUSED'
+        status: getNewStatus(),
+        inQueueSince: getNewStatus() === 'AVAILABLE' ? new Date() : null,
       }
     })
       
+    
     socket.emit("user_status_changed", user.id);
     
     const usersInQueue = await prisma.user.findMany({

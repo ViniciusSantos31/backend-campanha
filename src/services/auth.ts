@@ -43,9 +43,13 @@ async function login(request: FastifyRequest, reply: FastifyReply) {
       expiresIn: '2d'
     });
 
+    const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET || '', {
+      expiresIn: '30d'
+    });
+
     socket.emit("user_login");
   
-    reply.send({ token, user: exclude(user, ['password']) });
+    reply.send({ token, refreshToken, user: exclude(user, ['password']) });
   } catch (error) {
     if (error instanceof ZodError) {
       const validation_errors = error.errors.map((error) => {
@@ -55,6 +59,42 @@ async function login(request: FastifyRequest, reply: FastifyReply) {
       return reply.status(400).send({ validation_errors });
     }
 
+    if (error instanceof Error) {
+      reply.status(500).send({ message: error.message });
+    }
+  }
+}
+
+async function refreshToken(request: FastifyRequest, reply: FastifyReply) {
+  
+  try {
+  
+    const { token } = request.body as { token: string };
+  
+    if (!token)
+      return reply.status(401).send({ message: 'Token não informado' });
+  
+    const { id } =
+      jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
+      
+    if (!id)
+      return reply.status(401).send({ message: 'Token inválido' });
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+      }
+    });
+
+    if (!user)
+      return reply.status(404).send({ message: "Usuário não encontrado" });
+
+    const newToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET || '', {
+      expiresIn: '2d'
+    });
+
+    reply.send({ token: newToken });
+  } catch (error) {
     if (error instanceof Error) {
       reply.status(500).send({ message: error.message });
     }
@@ -98,5 +138,5 @@ async function logout(request: FastifyRequest, reply: FastifyReply) {
 
 }
 
-export { login, logout };
+export { login, logout, refreshToken };
 

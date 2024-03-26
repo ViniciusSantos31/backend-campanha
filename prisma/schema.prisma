@@ -36,7 +36,7 @@ model User {
   lastName     String
   phone        String
   cpf          String
-  doc          String
+  doc          String?
   email        String       @unique
   userType     UserType     @default(REQUESTER)
   status       Status       @default(OFFLINE)
@@ -47,6 +47,7 @@ model User {
   createdAt    DateTime     @default(now())
   inQueueSince DateTime?
   conferences  Conference[]
+  otp          Otp?
 }
 
 model Company {
@@ -63,4 +64,13 @@ model Conference {
   provider   User             @relation(fields: [providerId], references: [id])
   providerId String
   status     ConferenceStatus @default(OPEN)
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  code      Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
 }

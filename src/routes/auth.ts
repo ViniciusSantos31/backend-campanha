@@ -2,7 +2,7 @@
 import { FastifyInstance, RouteOptions } from 'fastify';
 import { authMiddleware } from '../middlewares/auth';
 import {
-  login, logout,
+  login, logout, refreshToken,
 } from '../services/auth';
 
 async function routes(fastify: FastifyInstance, options: RouteOptions) {
@@ -10,6 +10,7 @@ async function routes(fastify: FastifyInstance, options: RouteOptions) {
 
   fastify.head('/logout', { ...options, preHandler: authMiddleware }, logout);
   
+  fastify.post('/refresh', { ...options }, refreshToken);
 
 }
 

@@ -1,6 +1,7 @@
 
 import { FastifyInstance, RouteOptions } from 'fastify';
 import { authMiddleware } from '../middlewares/auth';
+import { sendEmail } from '../services/code';
 import {
   createUser,
   getProviders, getUser, getUsers, joinQueue, leaveQueue, me, toggleStatus, updateUser
@@ -22,8 +23,10 @@ async function routes(fastify: FastifyInstance, options: RouteOptions) {
   fastify.get('/users/providers', 
     { ...options, preHandler: authMiddleware }, getProviders);
 
-  fastify.put('/users/:id', 
-    { ...options, preHandler: authMiddleware }, updateUser);
+  fastify.post('/users/:id', 
+    {
+      ...options, preHandler: authMiddleware,
+    }, updateUser);
   
   fastify.put('/users/provider/status', {
     ...options,
@@ -40,6 +43,8 @@ async function routes(fastify: FastifyInstance, options: RouteOptions) {
   fastify.post('/users/queue/leave',
     { ...options, preHandler: authMiddleware }, leaveQueue
   );
+
+  fastify.post('/send/email', { ...options }, sendEmail);
 }
 
 export default routes;

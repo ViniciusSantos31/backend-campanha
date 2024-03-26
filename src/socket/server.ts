@@ -27,7 +27,6 @@ socket.on('connection', (socket) => {
     } else {
       socket.join('requesters');
     }
-
   });
 });
 

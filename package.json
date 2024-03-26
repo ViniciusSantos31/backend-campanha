@@ -22,6 +22,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.11.28",
+    "@types/nodemailer": "^6.4.14",
     "@types/nodemon": "^1.19.6",
     "nodemon": "^3.1.0",
     "prisma": "^5.11.0",
@@ -39,9 +40,12 @@
     "dotenv": "^16.4.5",
     "fastify": "^4.26.2",
     "firebase-admin": "^12.0.0",
+    "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.13",
     "socket.io": "^4.7.5",
     "wise-api": "^1.1.11",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zod-form-data": "^2.0.2"
   }
 }
