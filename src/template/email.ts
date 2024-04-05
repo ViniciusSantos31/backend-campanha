@@ -1,118 +1,129 @@
-export const template: string = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta charset="UTF-8">
-    <style>
-      body {
+export const template: string = `<!-- 
+Online HTML, CSS and JavaScript editor to run code online.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Plantão - PROCON</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    .wrapper {
+      width: 100%;
+      background-color: #cccccc;
+    }
+
+    .main {
+      width: 100%;
+      height: 100%;
+      max-width: 600px;
+      background-color: #fff;
+    }
+
+    .logo-name {
+      font-size: 24px;
+    }
+    
+    .logo {
+    	margin-top: 60px;
+    }
+
+    .logo h2 {
         margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-        background-color: #cccccc;
-      }
-      table {
-        border-spacing: 0;
-      }
-      td {
-        padding: 0;
-      }
+        font-size: 48px;
+    }
 
-      img {
-        border: 0;
-      }
+    span.message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 16px;
+      font-size: 16px;
+      margin-bottom: 60px;
+    }
 
-      .wrapper {
-        width: 100%;
-        table-layout: fixed;
-        background-color: #cccccc;
-        padding: 60px 0;
-      }
+    .content {
+      height: 30px;
+    }
 
-      .main {
-        background-color: #ffffff;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 700px;
-        border-spacing: 0;
-        border-radius: 8px;
-        color: #171a1b;
-      }
+    .code {
+      font-size: 48px;
+      font-weight: 600;
+      letter-spacing: 16px;
+      margin-left: 16px;
+    }
 
-      .content {
-        flex-direction: column;
-        align-items: center;
-        border: 2px solid;
-        padding: 16px;
-        border-radius: 8px;
-        padding: 50px;
-      }
+    .code-container {
+      font-size: 48px;
+      font-weight: 600;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 36px;
+    }
 
-      .logo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 8px;
-      }
+    .obs {
+      margin-top: 36px;
+      margin-bottom: 60px;
+    }
 
-      .logo p {
-        font-family: sans-serif;
-        font-size: 36px;
-      }
+    .obs small {
+      color: #71717A;
+    }
 
-      .code {
-        text-align: center;
-        font-weight: bold;
-        font-size: 96px;
-        margin-bottom: 40px;
-        margin-top: 40px;
-        letter-spacing: 2rem;
-        margin-left: 2rem;
-      }
-      
-      .logo p {
-        font-weight: 500;
-        margin: 0;
-      }
-      
-      .logo {
-        margin: 50px 0;
-      }
-      
-      span.message {
-        font-size: 24px;
-      }
+    .button-container {
+      margin-top: 24px;
+    }
 
-      small {
-        color: #71717a;
-        margin-top: 6px;
-      }
-    </style>
-  </head>
-  <body>
-    <center class="wrapper">
-      <table class="main" width="100%"">
-        <tr>
-          <td class="wrapper-inner" align="center">
-            <table class="content" width="100%">
-              <tr>
-                <td class="content-inner" align="center" width="100%">
-                  <aside class="logo" style="width: 100%; display: flex;">
-                    <p>Plantão</p>
-                        <img src="src/assets/logo_procon.png" />
-                  </aside>
-                  <span class="message">Aqui está o código de verificação para redefinição de senha.</span>
-                  <p class="code">{{code}}</p>
+    .button-container button {
+      all: unset;
+      padding: 16px;
+      background-color: #000;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <center class="wrapper">
+    <table class="main" width="100%">
+    	<tr>
+          <td height="8" style="background-color: #171a1b;" />
+      	</tr>
+      	<tr class="content">
+          <td>
+            <center>
+            <table>
+                <center class="logo">
+                  <b class="logo-name">Plantão</b>
+                  <h2>
+                    PROCON
+                  </h2>
+                </center>
+                <center class="message">
+                  Aqui está o código de verificação para redefinição 				de senha.
+                </center>
+                <center class="code-container">
+                  <p id="code" class="code">4567</p>
+                </center>
+                <center class="obs">
                   <small>
-                    Lembre-se de que o código expira após 10 minutos.
-                  </small>
-                </td>
-              </tr>
+                    Lembre-se de que o código expira após 10 minutos.					</small>
+                </center>
             </table>
-          </td>
-        </tr>
-      </table>
-    </center>
-  </body>
+            </center>
+           </td>
+      	</tr>
+    </table>
+  </center>
+  <script src="script.js"></script>
+</body>
 </html>`
