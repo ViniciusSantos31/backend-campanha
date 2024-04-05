@@ -112,7 +112,7 @@ Online HTML, CSS and JavaScript editor to run code online.
                   Aqui está o código de verificação para redefinição 				de senha.
                 </center>
                 <center class="code-container">
-                  <p id="code" class="code">4567</p>
+                  <p id="code" class="code">{{code}}</p>
                 </center>
                 <center class="obs">
                   <small>
