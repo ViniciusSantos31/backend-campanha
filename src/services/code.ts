@@ -54,13 +54,13 @@ async function sendEmail(request: FastifyRequest, reply: FastifyReply) {
       data: {
         code: otpCode,
         userId: userExists.id,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2) // 2 horas
+        expiresAt: new Date(Date.now() + 1000 * 60 * 5) // 5 minutes
       }
     });
 
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: 'vncssnts31@gmail.com',
+      to: email,
       subject: `[Plantão] Seu código de verificação - ${code.code}`,
       html: template.replace('{{code}}', code.code.toString())
     }).then(() => {
@@ -103,7 +103,7 @@ async function verifyCode(request: FastifyRequest, reply: FastifyReply) {
     if (otp.expiresAt < new Date())
       return reply.status(400).send({ message: 'Código expirado' });
 
-    reply.send({ message: 'Código válido' });
+    reply.send({ message: 'Código válido!' });
   }
   catch (error) {
     console.log(error);
@@ -112,16 +112,11 @@ async function verifyCode(request: FastifyRequest, reply: FastifyReply) {
 
 async function resendCode(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const { email } = request.body as { email: string };
-
     const { codeId } = request.params as { codeId: string };
 
     const otp = await prisma.otp.findFirst({
       where: {
         id: codeId,
-        user: {
-          email
-        }
       }
     });
 
@@ -130,7 +125,7 @@ async function resendCode(request: FastifyRequest, reply: FastifyReply) {
 
     const user = await prisma.user.findFirst({
       where: {
-        email,
+        id: otp.userId,
       }
     });
 
@@ -145,15 +140,19 @@ async function resendCode(request: FastifyRequest, reply: FastifyReply) {
       },
       data: {
         code: otpCode,
-        expiresAt: new Date(Date.now() + 60000)
+        expiresAt: new Date(Date.now() + 1000 * 60 * 5)
       }
     });
 
     await transporter.sendMail({
-      from: '',
-      to: email,
-      subject: 'Testando e-mail de senha',
-      text: otpCode.toString(),
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: `[Plantão] Seu código de verificação - ${code.code}`,
+      html: template.replace('{{code}}', code.code.toString())
+    }).then(() => {
+      console.log('E-mail enviado com sucesso');
+    }).catch((error) => { 
+      console.log(`Erro ao enviar e-mail: ${error.message}`);
     });
 
     reply.send({ code });
@@ -207,15 +206,10 @@ async function verifyCodeId(request: FastifyRequest, reply: FastifyReply) {
     const otp = await prisma.otp.findFirst({
       where: {
         id: codeId,
-        AND: {
-          expiresAt: {
-            gt: new Date()
-          }
-        }
       }
     });
 
-    if (!otp)
+    if (!otp || otp.expiresAt < new Date())
       return reply.status(404).send({ message: 'Código inválido' });
 
     return reply.send({ message: 'Código válido' });
