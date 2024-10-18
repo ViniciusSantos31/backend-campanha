@@ -15,6 +15,7 @@ const app = fastify();
 
 app.register(cors, {
   origin: "*",
+  prefix: "/api",
 });
 
 app.register(multipart);
