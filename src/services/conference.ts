@@ -83,6 +83,9 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
           });
         });
 
+      console.log("session", session);
+      // await (await wiseAPI).session.open(session.short);
+
       conferenceOpen = await prisma.conference.create({
         data: {
           short: session.short,
@@ -127,8 +130,6 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
       if (!a.inQueueSince || !b.inQueueSince) return 0;
       return a.inQueueSince.getTime() - b.inQueueSince.getTime();
     })[0];
-
-    console.log(guestsInQueue);
 
     socket.emit("conference_created", {
       short: conferenceOpen.short,

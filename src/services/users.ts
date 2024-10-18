@@ -369,7 +369,7 @@ async function leaveQueue(request: FastifyRequest, reply: FastifyReply) {
 
     const userIsGuest = !!guestUser;
 
-    if (!user || !guestUser)
+    if (!user)
       return reply.status(404).send({ message: "Usuário não encontrado" });
 
     if (userIsGuest) {
