@@ -317,7 +317,7 @@ async function joinQueue(request: FastifyRequest, reply: FastifyReply) {
         },
       });
 
-      socket.to("plantao").emit("new_user_in_queue", user);
+      socket.emit("new_user_in_queue", guestUser);
 
       return reply.status(200).send();
     }
@@ -332,7 +332,7 @@ async function joinQueue(request: FastifyRequest, reply: FastifyReply) {
       },
     });
 
-    socket.to("plantao").emit("new_user_in_queue", user);
+    socket.emit("new_user_in_queue", systemUser);
 
     reply.status(200).send();
   } catch (error) {
