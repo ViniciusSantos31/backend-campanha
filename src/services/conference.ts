@@ -1,10 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply, FastifyRequest } from "fastify";
 
-import { socket } from '../socket/server';
-import { createConferenceSchema } from '../validations/conference';
-import { prisma } from './prisma';
-import { wiseAPI } from './wiseAPI';
-
+import { socket } from "../socket/server";
+import { createConferenceSchema } from "../validations/conference";
+import { prisma } from "./prisma";
+import { wiseAPI } from "./wiseAPI";
 
 async function createConference(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -13,64 +12,72 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
     const provider = await prisma.user.findFirst({
       where: {
         id: providerId,
-        userType: 'PROVIDER',
+        userType: "PROVIDER",
       },
     });
 
-    if (!provider || provider.status !== 'AVAILABLE')
-      return reply.status(404).send(
-        { message: 'Consultor não encontrado ou não disponível.' });
-    
+    if (!provider || provider.status !== "AVAILABLE")
+      return reply
+        .status(404)
+        .send({ message: "Consultor não encontrado ou não disponível." });
+
     const providersInQueue = await prisma.user.findFirst({
       where: {
-        status: 'AVAILABLE',
+        status: "AVAILABLE",
         AND: {
-          userType: 'PROVIDER',
-        }
+          userType: "PROVIDER",
+        },
       },
       orderBy: {
-        inQueueSince: 'asc',
-      }
+        inQueueSince: "asc",
+      },
     });
 
     if (providersInQueue && providersInQueue.id !== provider.id) {
-      return reply.status(400).send(
-        { message: 'Existem consultores na fila antes de você.' });
+      return reply
+        .status(400)
+        .send({ message: "Existem consultores na fila antes de você." });
     }
 
     let conferenceOpen = await prisma.conference.findFirst({
       where: {
         providerId,
         AND: {
-          status: 'OPEN',
+          status: "OPEN",
         },
       },
     });
 
     if (conferenceOpen) {
-      const statusConference = (await (await wiseAPI).session.get(conferenceOpen.short)).status;
+      const statusConference = (
+        await (await wiseAPI).session.get(conferenceOpen.short)
+      ).session.status;
 
-      if (statusConference === 'CLOSED') {
+      if (statusConference === "CLOSED") {
         conferenceOpen = await prisma.conference.update({
           where: {
             id: conferenceOpen.id,
           },
           data: {
-            status: 'FINISHED',
+            status: "FINISHED",
           },
         });
       }
     } else {
-      const session = await (await wiseAPI).session.create({
-        org: process.env.WISE_ORG as string,
-        orgUnit: process.env.WISE_ORG_UNIT as string,
-        allowTranscription: false,
-        allowRegistryDLT: false,
-      }).catch((error) => {
-        return reply.status(500).send(
-          { message: `Erro ao criar sessão de conferência: ${error.message}` }
-        );
-      });
+      const session = await (
+        await wiseAPI
+      ).session
+        .create({
+          org: process.env.WISE_ORG as string,
+          orgUnit: process.env.WISE_ORG_UNIT as string,
+          allowTranscription: false,
+          allowRegistryDLT: false,
+        })
+        .catch((error) => {
+          return reply.status(500).send({
+            message: `Erro ao criar sessão de conferência: ${error.message}`,
+          });
+        });
 
       conferenceOpen = await prisma.conference.create({
         data: {
@@ -85,27 +92,39 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
         id: provider.id,
       },
       data: {
-        status: 'BUSY',
+        status: "BUSY",
       },
     });
 
-    socket.emit('user_status_changed', provider.id);
+    socket.emit("user_status_changed", provider.id);
 
     const usersInQueue = await prisma.user.findMany({
       where: {
-        status: 'AVAILABLE',
+        status: "AVAILABLE",
         AND: {
-          userType: 'REQUESTER',
-        }
+          userType: "REQUESTER",
+        },
       },
       orderBy: {
-        inQueueSince: 'asc',
-      }
+        inQueueSince: "asc",
+      },
     });
 
-    const olderUser = usersInQueue[0];
+    const guestsInQueue = await prisma.guestUser.findMany({
+      where: {
+        status: "AVAILABLE",
+      },
+      orderBy: {
+        inQueueSince: "asc",
+      },
+    });
 
-    socket.emit('conference_created', {
+    const olderUser = [...usersInQueue, ...guestsInQueue].sort((a, b) => {
+      if (!a.inQueueSince || !b.inQueueSince) return 0;
+      return a.inQueueSince.getTime() - b.inQueueSince.getTime();
+    })[0];
+
+    socket.emit("conference_created", {
       short: conferenceOpen.short,
       userToCall: olderUser,
       providerToCall: provider,
@@ -120,8 +139,7 @@ async function createConference(request: FastifyRequest, reply: FastifyReply) {
 
 async function closeConference(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const { short } =
-      request.params as { short: string };
+    const { short } = request.params as { short: string };
 
     const { providerId } = request.body as { providerId: string };
 
@@ -130,19 +148,19 @@ async function closeConference(request: FastifyRequest, reply: FastifyReply) {
         short,
         AND: {
           providerId,
-        }
+        },
       },
     });
 
     if (!conference)
-      return reply.status(404).send({ message: 'Conferência não encontrada.' });
+      return reply.status(404).send({ message: "Conferência não encontrada." });
 
     await prisma.conference.update({
       where: {
         id: conference.id,
       },
       data: {
-        status: 'FINISHED',
+        status: "FINISHED",
       },
     });
 
@@ -151,13 +169,13 @@ async function closeConference(request: FastifyRequest, reply: FastifyReply) {
         id: providerId,
       },
       data: {
-        status: 'PAUSED',
+        status: "PAUSED",
       },
     });
 
-    socket.emit('user_status_changed', providerId);
+    socket.emit("user_status_changed", providerId);
 
-    reply.send({ message: 'Conferência encerrada com sucesso.' });
+    reply.send({ message: "Conferência encerrada com sucesso." });
   } catch (error) {
     if (error instanceof Error)
       reply.status(500).send({ message: error.message });
@@ -165,4 +183,3 @@ async function closeConference(request: FastifyRequest, reply: FastifyReply) {
 }
 
 export { closeConference, createConference };
-

@@ -50,20 +50,36 @@ model User {
   otp          Otp?
 }
 
+model GuestUser {
+  id           String       @id @default(uuid())
+  firstName    String
+  lastName     String
+  userType     UserType     @default(REQUESTER)
+  companyId    String
+  status       Status       @default(AVAILABLE)
+  company      Company      @relation(fields: [companyId], references: [id])
+  conferences  Conference[]
+  inQueueSince DateTime?
+  createdAt    DateTime     @default(now())
+}
+
 model Company {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   name      String
-  cnpj      String   @unique
+  cnpj      String      @unique
   users     User[]
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
+  GuestUser GuestUser[]
 }
 
 model Conference {
-  id         String           @id @default(uuid())
-  short      String           @unique
-  provider   User             @relation(fields: [providerId], references: [id])
-  providerId String
-  status     ConferenceStatus @default(OPEN)
+  id          String           @id @default(uuid())
+  short       String           @unique
+  provider    User             @relation(fields: [providerId], references: [id])
+  providerId  String
+  status      ConferenceStatus @default(OPEN)
+  GuestUser   GuestUser?       @relation(fields: [guestUserId], references: [id])
+  guestUserId String?
 }
 
 model Otp {
